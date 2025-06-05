@@ -1,7 +1,7 @@
 # Open Gate Frontend client
 
 ## About
-***THIS PROJECT REQUIRES FFMPEG***
+***THIS PROJECT REQUIRES FFMPEG*** \
 This repository provides a web-like interface for interacting with the RB3, specifically for fetching the video stream and sending/receiving audio. 
 
 
