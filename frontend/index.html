@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" type="image/png" href="src/assets/images/logo-universal.png"/>
+    <title>WebRTC Audio Control</title>
+    <style>
+        @font-face {
+            font-family: "Nunito";
+            font-style: normal;
+            font-weight: 400;
+            src: local(""),
+            url("src/assets/fonts/nunito-v16-latin-regular.woff2") format("woff2");
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1e1e1e;
+            color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            padding: 20px;
+        }
+
+        .iframe-wrapper {
+            position: relative;
+            width: 100%;
+            padding-top: 50%; /* 16:9 = 56.25%, 4:3 = 75%, 2:1 = 50% */
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .iframe-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            background: #000;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 1rem;
+            width: 100%;
+            max-width: 300px;
+            border-radius: 5px;
+            border: none;
+            text-align: center;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .start {
+            background-color: #0078d4;
+            color: white;
+        }
+
+        .start:hover {
+            background-color: #005ea0;
+        }
+
+        .stop {
+            background-color: #d9534f;
+            color: white;
+        }
+
+        .stop:hover {
+            background-color: #c9302c;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="iframe-wrapper">
+        <iframe id="video" allow="autoplay" frameborder="0"></iframe>
+    </div>
+    <div class="controls">
+        <input type="text" id="ip" placeholder="Enter device IP (e.g. 192.168.1.100)" />
+
+        <div class="button-group">
+            <button id="receiveBtn" class="start" onclick="toggleReceive()">Start Audio Receiver</button>
+            <button id="sendBtn" class="start" onclick="toggleSend()">Send Mic Audio</button>
+        </div>
+    </div>
+</div>
+<script type="module">
+    import { setupEvents} from "./src/main";
+
+    setupEvents();
+
+    let receiveActive = false;
+    let sendActive = false;
+
+    window.toggleReceive = async function () {
+        const btn = document.getElementById("receiveBtn");
+        const ip = document.getElementById("ip").value.trim();
+
+        if (!receiveActive) {
+            await window.StartAudioReceive(ip);
+            btn.textContent = "Stop Audio Receiver";
+            btn.classList.remove("start");
+            btn.classList.add("stop");
+            receiveActive = true;
+        } else {
+            await window.StopAudioReceive();
+            btn.textContent = "Start Audio Receiver";
+            btn.classList.remove("stop");
+            btn.classList.add("start");
+            receiveActive = false;
+        }
+    };
+
+    window.toggleSend = async function () {
+        const btn = document.getElementById("sendBtn");
+        const ip = document.getElementById("ip").value.trim();
+        console.log("Working")
+        if (!sendActive) {
+            await window.StartAudioSend(ip);
+            btn.textContent = "Stop Mic Audio";
+            btn.classList.remove("start");
+            btn.classList.add("stop");
+            sendActive = true;
+        } else {
+            console.log("Shuting down")
+            await window.StopAudioSend();
+            btn.textContent = "Send Mic Audio";
+            btn.classList.remove("stop");
+            btn.classList.add("start");
+            sendActive = false;
+        }
+    };
+
+    const node = document.getElementById("ip");
+    if (node != null) {
+        node.addEventListener("keypress", ({ key }) => {
+            if (key === "Enter") {
+                const ipValue = node.value.trim();
+                console.log(ipValue)
+                if (ipValue) {
+                    const iframe = document.getElementById("video");
+                    iframe.src = `http://${ipValue}:8888/videostream`;
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>
